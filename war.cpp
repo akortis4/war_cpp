@@ -37,14 +37,15 @@ class Deck {
             shuffle_deck();
         }
 
-        Card* get_deck() {
-            return deck;
+        void print_deck() {
+            for (Card card: deck) {
+                std::cout << card.card_face << " " << card.card_suit << "\n";
+            }
         }
 };
 
 int main() {
     Deck deck{};
-
 
     return 0;
 }
