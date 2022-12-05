@@ -11,7 +11,7 @@ struct Card {
 
 class PlayerHand {
     private:
-        std::vector<Card> player_hand(26);
+        std::vector<Card> player_hand;
     
     public:
         PlayerHand() {
@@ -36,8 +36,8 @@ class Deck {
 
         void create_deck() {
             int counter{0};
-            for (int i{0}; i < sizeof(card_faces) / sizeof(card_faces[0]); ++i) {
-                for (int j{0}; j < sizeof(card_suits) / sizeof(card_suits[0]); ++j) {
+            for (int i{0}; i < std::size(card_faces); ++i) {
+                for (int j{0}; j < std::size(card_suits); ++j) {
                     Card new_card {card_faces[i], card_suits[j], i};
                     deck[counter] = new_card;
                     ++counter;
@@ -57,7 +57,7 @@ class Deck {
         }
 
         void deal_cards(PlayerHand player1, PlayerHand player2) {
-            for (int i{0}; i < sizeof(deck) / sizeof(deck[0]); ++i) {
+            for (int i{0}; i < std::size(deck); ++i) {
                 if (i % 2 == 0) {
                     player1.receive_deal(deck[i]);
                 } else {
