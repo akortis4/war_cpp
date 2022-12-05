@@ -1,12 +1,31 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <random>
+#include <vector>
 
 struct Card {
     std::string card_face{};
     std::string card_suit{};
     int card_value{};
+};
+
+class PlayerHand {
+    private:
+        std::vector<Card> player_hand(26);
+    
+    public:
+        PlayerHand() {
+        }
+
+        void receive_deal(Card card) {
+            player_hand.push_back(card);
+        }
+
+        void print_hand() {
+            for (Card card: player_hand) {
+                std::cout << card.card_face << " " << card.card_suit << "\n";
+            }
+        }
 };
 
 class Deck {
@@ -37,6 +56,16 @@ class Deck {
             shuffle_deck();
         }
 
+        void deal_cards(PlayerHand player1, PlayerHand player2) {
+            for (int i{0}; i < sizeof(deck) / sizeof(deck[0]); ++i) {
+                if (i % 2 == 0) {
+                    player1.receive_deal(deck[i]);
+                } else {
+                    player2.receive_deal(deck[i]);
+                }
+            }
+        }
+
         void print_deck() {
             for (Card card: deck) {
                 std::cout << card.card_face << " " << card.card_suit << "\n";
@@ -44,8 +73,13 @@ class Deck {
         }
 };
 
+
+
 int main() {
     Deck deck{};
-
+    PlayerHand player1{};
+    PlayerHand player2{};
+    deck.deal_cards(player1, player2);
+    player1.print_hand();
     return 0;
 }
