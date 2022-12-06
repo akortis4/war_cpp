@@ -2,6 +2,8 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <random>
+#include <chrono>
 
 struct Card {
     std::string card_face{};
@@ -26,7 +28,8 @@ int compare_card(Card card1, Card card2) {
 class PlayerHand {
     private:
         std::vector<Card> player_hand;
-        int hand_position{0};
+        std::vector<Card> won_cards;
+        bool out_of_cards{false};
     
     public:
         PlayerHand() {
@@ -42,31 +45,30 @@ class PlayerHand {
             }
         }
 
-        int get_hand_size() {
-            return std::size(player_hand);
-        }
-
         Card get_card(int i) {
             return player_hand[i];
         }
 
-        int get_position() {
-            return hand_position;
+        void add_won_cards(Card card1, Card card2) {
+            won_cards.push_back(card1);
+            won_cards.push_back(card2);
         }
 
-        void increment_position() {
-            ++hand_position;
+        void remove_card() {
+            player_hand.erase(player_hand.begin());
         }
 
-        void reset_position() {
-            hand_position = 0;
+        void card_check() {
+            if (player_hand.size() == 0 && won_cards.size() == 0) {
+                out_of_cards = true;
+            }
         }
 };
 
 class Deck {
     private:
         std::string card_faces[13]{"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
-        std::string card_suits[4]{"Heats", "Diamonds", "Spades", "Clubs"};
+        std::string card_suits[4]{"Hearts", "Diamonds", "Spades", "Clubs"};
         Card deck[52]{};
 
         void create_deck() {
@@ -81,8 +83,8 @@ class Deck {
         }
 
         void shuffle_deck() {
-            std::random_shuffle(std::begin(deck), std::end(deck));
-            std::random_shuffle(std::begin(deck), std::end(deck));
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::shuffle(std::begin(deck), std::end(deck), std::default_random_engine(seed));
         }
 
     public:
@@ -108,11 +110,53 @@ class Deck {
         }
 };
 
+class Game {
+    private:
+        Deck deck{};
+        PlayerHand player1{};
+        PlayerHand player2{};
+        bool run{false};
+    
+    public:
+        Game() {
+            deck.deal_cards(player1, player2);
+        }
+
+        void run_game() {
+            run = true;
+            while (run) {
+                Card player1_card = player1.get_card(0);
+                Card player2_card = player2.get_card(0);
+                int hand_compare {compare_card(player1_card, player2_card)};
+                compare(hand_compare, player1_card, player2_card);
+                std::cin.ignore();
+            }
+        }
+
+        void compare(int hand_compare, Card player1_card, Card player2_card) {
+            if (hand_compare == -1) {
+                std::cout << "Player 2 Wins: " << player2_card.card_face << " " << player2_card.card_suit << " Beats " << player1_card.card_face << " " << player1_card.card_suit << "\n";
+                player2.add_won_cards(player2_card, player1_card);
+                player1.remove_card();
+                player2.remove_card();
+            } else if (hand_compare == 1) {
+                std::cout << "Player 1 Wins: " << player1_card.card_face << " " << player1_card.card_suit << " Beats " << player2_card.card_face << " " << player2_card.card_suit << "\n";
+                player1.add_won_cards(player1_card, player2_card);
+                player1.remove_card();
+                player2.remove_card();
+            } else if (hand_compare == 0) {
+                std::cout << "WAR!!!"<< "\n";
+            } else {
+                std::cout << "ERROR in comparison" << "\n";
+            }
+            player1.card_check();
+            player2.card_check();
+        }
+};
+
 int main() {
-    Deck deck{};
-    PlayerHand player1{};
-    PlayerHand player2{};
-    deck.deal_cards(player1, player2);
+    Game game{};
+    game.run_game();
     //need to iterate through each hand and compare next card
     //keep track of each position in the hand
     //maybe create a game class to stroe all this stuff in
