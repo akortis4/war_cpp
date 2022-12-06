@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <vector>
 
 struct Card {
     std::string card_face{};
@@ -24,14 +25,15 @@ int compare_card(Card card1, Card card2) {
 
 class PlayerHand {
     private:
-        Card player_hand[26]{};
+        std::vector<Card> player_hand;
+        int hand_position{0};
     
     public:
         PlayerHand() {
         }
 
-        void receive_deal(int i, Card card) {
-            player_hand[i] = card;
+        void receive_deal(Card card) {
+            player_hand.push_back(card);
         }
 
         void print_hand() {
@@ -46,6 +48,18 @@ class PlayerHand {
 
         Card get_card(int i) {
             return player_hand[i];
+        }
+
+        int get_position() {
+            return hand_position;
+        }
+
+        void increment_position() {
+            ++hand_position;
+        }
+
+        void reset_position() {
+            hand_position = 0;
         }
 };
 
@@ -80,9 +94,9 @@ class Deck {
         void deal_cards(PlayerHand& player1, PlayerHand& player2) {
             for (int i{0}; i < std::size(deck); ++i) {
                 if (i % 2 == 0) {
-                    player1.receive_deal(((i % 52) / 2), deck[i]);
+                    player1.receive_deal(deck[i]);
                 } else {
-                    player2.receive_deal((((i - 1) % 52) / 2), deck[i]);
+                    player2.receive_deal(deck[i]);
                 }
             }
         }
@@ -100,4 +114,7 @@ int main() {
     PlayerHand player2{};
     deck.deal_cards(player1, player2);
     //need to iterate through each hand and compare next card
+    //keep track of each position in the hand
+    //maybe create a game class to stroe all this stuff in
+    return 0;
 }
