@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <vector>
 
 struct Card {
     std::string card_face{};
@@ -9,22 +8,44 @@ struct Card {
     int card_value{};
 };
 
+int compare_card(Card card1, Card card2) {
+    int compare{};
+    if (card1.card_value == card2.card_value) {
+        compare = 0;
+    } else if (card1.card_value < card2.card_value) {
+        compare = -1;
+    } else if (card1.card_value > card2.card_value) {
+        compare = 1;
+    } else {
+        compare = -2;
+    }
+    return compare;
+}
+
 class PlayerHand {
     private:
-        std::vector<Card> player_hand;
+        Card player_hand[26]{};
     
     public:
         PlayerHand() {
         }
 
-        void receive_deal(Card card) {
-            player_hand.push_back(card);
+        void receive_deal(int i, Card card) {
+            player_hand[i] = card;
         }
 
         void print_hand() {
             for (Card card: player_hand) {
                 std::cout << card.card_face << " " << card.card_suit << "\n";
             }
+        }
+
+        int get_hand_size() {
+            return std::size(player_hand);
+        }
+
+        Card get_card(int i) {
+            return player_hand[i];
         }
 };
 
@@ -56,12 +77,12 @@ class Deck {
             shuffle_deck();
         }
 
-        void deal_cards(PlayerHand player1, PlayerHand player2) {
+        void deal_cards(PlayerHand& player1, PlayerHand& player2) {
             for (int i{0}; i < std::size(deck); ++i) {
                 if (i % 2 == 0) {
-                    player1.receive_deal(deck[i]);
+                    player1.receive_deal(((i % 52) / 2), deck[i]);
                 } else {
-                    player2.receive_deal(deck[i]);
+                    player2.receive_deal((((i - 1) % 52) / 2), deck[i]);
                 }
             }
         }
@@ -73,13 +94,10 @@ class Deck {
         }
 };
 
-
-
 int main() {
     Deck deck{};
     PlayerHand player1{};
     PlayerHand player2{};
     deck.deal_cards(player1, player2);
-    player1.print_hand();
-    return 0;
+    //need to iterate through each hand and compare next card
 }
