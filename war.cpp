@@ -29,6 +29,7 @@ class PlayerHand {
     private:
         std::vector<Card> player_hand;
         std::vector<Card> won_cards;
+        std::vector<Card> war_cards;
         bool out_of_cards{false};
     
     public:
@@ -62,6 +63,10 @@ class PlayerHand {
             if (player_hand.size() == 0 && won_cards.size() == 0) {
                 out_of_cards = true;
             }
+        }
+
+        void add_war_cards(Card card) {
+            war_cards.push_back(card);
         }
 };
 
@@ -146,11 +151,18 @@ class Game {
                 player2.remove_card();
             } else if (hand_compare == 0) {
                 std::cout << "WAR!!!"<< "\n";
+                player1.add_war_cards(player1_card);
+                player2.add_war_cards(player2_card);
+                player1.remove_card();
+                player2.remove_card();
             } else {
                 std::cout << "ERROR in comparison" << "\n";
             }
             player1.card_check();
             player2.card_check();
+        }
+
+        void war() {
         }
 };
 
