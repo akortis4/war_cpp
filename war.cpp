@@ -155,6 +155,7 @@ class Game {
                 player2.add_war_cards(player2_card);
                 player1.remove_card();
                 player2.remove_card();
+                war();
             } else {
                 std::cout << "ERROR in comparison" << "\n";
             }
