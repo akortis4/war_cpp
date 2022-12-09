@@ -28,9 +28,8 @@ int compare_card(Card card1, Card card2) {
 class PlayerHand {
     private:
         std::vector<Card> player_hand;
-        std::vector<Card> won_cards;
-        std::vector<Card> war_cards;
-        bool out_of_cards{false};
+        std::vector<Card> won_pile;
+        bool no_cards{false};
     
     public:
         PlayerHand() {
@@ -40,33 +39,36 @@ class PlayerHand {
             player_hand.push_back(card);
         }
 
-        void print_hand() {
-            for (Card card: player_hand) {
-                std::cout << card.card_face << " " << card.card_suit << "\n";
+        Card get_card(int i) {
+            return player_hand.at(i);
+        }
+
+        void out_of_cards() {
+            if (player_hand.size() == 0 && won_pile.size() == 0) {
+                no_cards = true;
             }
         }
 
-        Card get_card(int i) {
-            return player_hand[i];
+        bool get_no_cards() {
+            return no_cards;
         }
 
-        void add_won_cards(Card card1, Card card2) {
-            won_cards.push_back(card1);
-            won_cards.push_back(card2);
+        void shuffle_cards() {
+            if (player_hand.size() == 0 && won_pile.size() > 0) {
+                auto rng = std::default_random_engine {};
+                std::shuffle(std::begin(won_pile), std::end(won_pile), rng);
+                player_hand.resize(won_pile.size());
+                player_hand.swap(won_pile);
+                won_pile.resize(0);
+            }
+        }
+
+        void add_won_card(Card card) {
+            won_pile.push_back(card);
         }
 
         void remove_card() {
             player_hand.erase(player_hand.begin());
-        }
-
-        void card_check() {
-            if (player_hand.size() == 0 && won_cards.size() == 0) {
-                out_of_cards = true;
-            }
-        }
-
-        void add_war_cards(Card card) {
-            war_cards.push_back(card);
         }
 };
 
@@ -107,12 +109,6 @@ class Deck {
                 }
             }
         }
-
-        void print_deck() {
-            for (Card card: deck) {
-                std::cout << card.card_face << " " << card.card_suit << "\n";
-            }
-        }
 };
 
 class Game {
@@ -120,7 +116,7 @@ class Game {
         Deck deck{};
         PlayerHand player1{};
         PlayerHand player2{};
-        bool run{false};
+        bool run{true};
     
     public:
         Game() {
@@ -128,50 +124,67 @@ class Game {
         }
 
         void run_game() {
-            run = true;
             while (run) {
-                Card player1_card = player1.get_card(0);
-                Card player2_card = player2.get_card(0);
-                int hand_compare {compare_card(player1_card, player2_card)};
-                compare(hand_compare, player1_card, player2_card);
-                std::cin.ignore();
+                player1.out_of_cards();
+                player2.out_of_cards();
+                if (player1.get_no_cards() || player2.get_no_cards()) {
+                    run = false;
+                    display_winner();
+                    break;
+                }
+            player1.shuffle_cards();
+            player2.shuffle_cards();
+            battle();
+            std::cin.ignore();
             }
         }
 
-        void compare(int hand_compare, Card player1_card, Card player2_card) {
-            if (hand_compare == -1) {
-                std::cout << "Player 2 Wins: " << player2_card.card_face << " " << player2_card.card_suit << " Beats " << player1_card.card_face << " " << player1_card.card_suit << "\n";
-                player2.add_won_cards(player2_card, player1_card);
-                player1.remove_card();
-                player2.remove_card();
-            } else if (hand_compare == 1) {
-                std::cout << "Player 1 Wins: " << player1_card.card_face << " " << player1_card.card_suit << " Beats " << player2_card.card_face << " " << player2_card.card_suit << "\n";
-                player1.add_won_cards(player1_card, player2_card);
-                player1.remove_card();
-                player2.remove_card();
-            } else if (hand_compare == 0) {
-                std::cout << "WAR!!!"<< "\n";
-                player1.add_war_cards(player1_card);
-                player2.add_war_cards(player2_card);
-                player1.remove_card();
-                player2.remove_card();
-                war();
+        void display_winner() {
+            if (player1.get_no_cards()) {
+                std::cout << "Sorry you lost. Player 2 is the Winner!" << "\n";
             } else {
-                std::cout << "ERROR in comparison" << "\n";
+                std::cout << "Congratulations! You are the winner!" << "\n";
             }
-            player1.card_check();
-            player2.card_check();
         }
 
-        void war() {
+        void battle() {
+            Card p1_card{player1.get_card(0)};
+            Card p2_card{player2.get_card(0)};
+            int result = compare_card(p1_card, p2_card);
+            std::vector<Card> winning_pile{p1_card, p2_card};           
+            if (result == -1) {
+                std::cout << "Player 2 Wins: " << p2_card.card_face << " " << p2_card.card_suit << " beats " << p1_card.card_face << " " << p1_card.card_suit << ".\n";
+                for (int i{0}; i < winning_pile.size(); ++i) {
+                    player2.add_won_card(winning_pile.at(i));
+                }
+                player1.remove_card();
+                player2.remove_card();
+            } else if (result == 1) {
+                std::cout << "Player 1 Wins: " << p1_card.card_face << " " << p1_card.card_suit << " beats " << p2_card.card_face << " " << p2_card.card_suit << ".\n";
+                for (int i{0}; i < winning_pile.size(); ++i) {
+                    player1.add_won_card(winning_pile.at(i));
+                }
+                player1.remove_card();
+                player2.remove_card();
+            } else if (result == 0) {
+                std::cout << "War!!!\n";
+                std::vector<Card> war_pile;
+                bool war{true};
+                while (war) {
+                    
+                }
+                //need to draw 3 cards or max if hand and won_pile sum to < 3
+                //if hand < 3 check won pile and suffle add to end of hand
+                //compare 4th card, if same war again
+                //store all cards in war vector to add to winning hand
+            } else {
+                std::cout << "Error in comparison." << "\n";
+            }
         }
 };
 
 int main() {
     Game game{};
     game.run_game();
-    //need to iterate through each hand and compare next card
-    //keep track of each position in the hand
-    //maybe create a game class to stroe all this stuff in
     return 0;
 }
