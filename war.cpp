@@ -70,6 +70,24 @@ class PlayerHand {
         void remove_card() {
             player_hand.erase(player_hand.begin());
         }
+
+        int get_max_size() {
+            int max_size{0};
+            if (player_hand.size() >= 4) {
+                max_size = 4;
+            } else {
+                if (won_pile.size() >= 4) {
+                    max_size = 4;
+                } else {
+                    if ((player_hand.size() + won_pile.size()) >= 4) {
+                        max_size = 4;
+                    } else {
+                        max_size = player_hand.size() + won_pile.size();
+                    }
+                }
+            }
+            return max_size;
+        }
 };
 
 class Deck {
@@ -171,7 +189,7 @@ class Game {
                 std::vector<Card> war_pile;
                 bool war{true};
                 while (war) {
-                    
+                    int max = max_size();
                 }
                 //need to draw 3 cards or max if hand and won_pile sum to < 3
                 //if hand < 3 check won pile and suffle add to end of hand
@@ -180,6 +198,12 @@ class Game {
             } else {
                 std::cout << "Error in comparison." << "\n";
             }
+        }
+
+        int max_size() {
+            int max_size{0};
+            max_size = (player1.get_max_size() >= player2.get_max_size()) ? player1.get_max_size() : player2.get_max_size();
+            return max_size;
         }
 };
 
