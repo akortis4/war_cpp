@@ -64,6 +64,12 @@ class PlayerHand {
         void remove_card() {
             player_hand.erase(player_hand.begin());
         }
+
+        int get_hand_length() {
+            int max_size{0};
+            max_size = player_hand.size();
+            return max_size;
+        }
 };
 
 class Deck {
@@ -134,6 +140,9 @@ class Game {
                     }
                 }
                 battle();
+                std::cout << "Player 1 hand size: " << player1.get_hand_length() << "\n";
+                std::cout << "Player 2 hand size: " << player2.get_hand_length() << "\n";
+                std::cin.ignore();
                 ++battle_count;
             }
         }
@@ -164,10 +173,84 @@ class Game {
                 player2.remove_card();
             } else if (battle_result == 0) {
                 std::cout << "WAR!!!" << "\n";
+                bool war{true};
+                std::vector<Card> war_pile{card1, card2};
+                while (war) {
+                    int p1_max{player1.get_hand_length()};
+                    int p2_max{player2.get_hand_length()};
+                    Card war_card1;
+                    Card war_card2;
+                    int max_size = (p1_max < p2_max) ? p1_max : p2_max;
+                    if (max_size == 1) {
+                        if (p1_max == 1) {
+                            war_card1 = card1;
+                            player2.remove_card();
+                            war_card2 = player2.get_card(0);
+                            war_pile.push_back(war_card2);
+                        }
+                        if (p2_max == 1) {
+                            war_card2 = card2;
+                            player1.remove_card();
+                            war_card1 = player1.get_card(0);
+                            war_pile.push_back(war_card1);
+                        }
+                    } else if (max_size < 5) {
+                        player1.remove_card();
+                        player2.remove_card();
+                        war_card1 = player1.get_card(max_size - 1);
+                        war_card2 = player2.get_card(max_size - 1);
+                        for (int i{0}; i < max_size; ++i) {
+                            war_pile.push_back(player1.get_card(0));
+                            war_pile.push_back(player2.get_card(0));
+                            player1.remove_card();
+                            player2.remove_card();
+                        }
+                    } else {
+                        player1.remove_card();
+                        player2.remove_card();
+                        war_card1 = player1.get_card(3);
+                        war_card2 = player2.get_card(3);
+                        for (int i{0}; i < 4; ++i) {
+                            war_pile.push_back(player1.get_card(0));
+                            war_pile.push_back(player2.get_card(0));
+                            player1.remove_card();
+                            player2.remove_card();
+                        }
+                    }
+                    int war_compare = compare_card(war_card1, war_card2);
+                    if (war_compare == 1) {
+                        std::cout << "Player 1 wins the war!!!" << "\n";
+                        war = false;
+                        if (p2_max == 1) {
+                            player1.add_won_card(war_card2);
+                            player2.remove_card();
+                        } else {
+                            for (Card card: war_pile) {
+                                player1.add_won_card(card);
+                            }
+                        }
+                        break;
+                    } else if (war_compare == -1) {
+                        std::cout << "Player 2 wins the war!!!" << "\n";
+                        war = false;
+                        if (p1_max == 1) {
+                            player2.add_won_card(war_card2);
+                            player1.remove_card();
+                        } else {
+                            for (Card card: war_pile) {
+                                player2.add_won_card(card);
+                            }
+                        }
+                        break;
+                    } else if (war_compare == 0) {
+                        continue;
+                    } else {
+                        std::cout << "Error in comparison!" << "\n";
+                    }
+                }
             } else {
                 std::cout << "Error in comparison" << "\n";
             }
-
         }
 };
 
